@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TenderPro | Upravljanje tenderima za kancelarijski nameštaj</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+
+    /* Prilagođeni skrolbarovi za kolone */
+    .col-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .col-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .col-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .col-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Stilovi za štampu / izvoz ponude u PDF */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printArea, #printArea * {
+        visibility: visible;
+      }
+      #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white;
+        padding: 20px;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+  <!-- GORNJA NAVIGACIJA -->
+  <header class="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between border-b border-slate-800 shrink-0 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 font-bold text-lg shadow">
+        T
+      </div>
+      <div>
+        <h1 class="text-sm font-bold tracking-tight flex items-center gap-2">
+          TenderPro
+          <span class="text-[11px] font-medium px-2 py-0.5 rounded bg-slate-800 text-amber-400 border border-slate-700">Kancelarijski nameštaj</span>
+        </h1>
+        <p class="text-[11px] text-slate-400">CRM • Zahtevi • Kalkulacija ponuda • Katalog • Revizija promena</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2.5">
+      <!-- Izbor valute -->
+      <div class="hidden sm:flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700 text-xs">
+        <button id="currEurBtn" onclick="setCurrency('EUR')" class="px-2.5 py-1 rounded-md font-medium bg-amber-500 text-slate-950 transition">EUR (€)</button>
+        <button id="currRsdBtn" onclick="setCurrency('RSD')" class="px-2.5 py-1 rounded-md font-medium text-slate-300 hover:text-white transition">RSD</button>
+      </div>
+
+      <!-- Status baze / Firebase povezivanje -->
+      <button onclick="openFirebaseModal()" id="dbStatusBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 transition">
+        <span id="dbStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+        <span id="dbStatusText">Lokalna baza (Demo)</span>
+      </button>
+
+      <!-- Reset demo podataka -->
+      <button onclick="resetDemoData()" title="Vrati početne primere podataka" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+        Reset demo
+      </button>
+    </div>
+  </header>
+
+  <!-- GLAVNI RADNI PROSTOR (5 KOLONA) -->
+  <main class="flex-1 overflow-x-auto overflow-y-hidden p-3">
+    <div class="h-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 min-w-[1460px]">
+
+      <!-- KOLONA 1: KLIJENTI -->
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+        <div class="p-3 border-b border-slate-200 bg-slate-50/70 shrink-0">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center">1</span>
+              <h2 class="font-bold text-sm text-slate-800">Klijenti</h2>
+              <span id="clientCountBadge" class="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700">0</span>
+            </div>
+            <button onclick="openClientModal()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium transition shadow-sm">
+              + Novi klijent
+            </button>
+          </div>
+          <div class="relative">
+            <input type="text" id="clientSearchInput" oninput="renderAll()" placeholder="Pretraži firmu, PIB, kontakt..." class="w-full pl-3 pr-7 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+            <button onclick="clearClientSelection()" id="showAllClientsBtn" class="hidden absolute right-2 top-1.5 text-[11px] text-amber-600 font-semibold hover:underline">Svi</button>
+          </div>
+        </div>
+
+        <div id="clientsList" class="flex-1 overflow-y-auto col-scroll p-2.5 space-y-2">
+          <!-- Dinamički render klijenata -->
+        </div>
+      </section>
+
+      <!-- KOLONA 2: ZAHTEV ZA TENDER -->
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+        <div class="p-3 border-b border-slate-200 bg-slate-50/70 shrink-0">
+          <div class="flex items-center justify-between mb-1.5">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center">2</span>
+              <h2 class="font-bold text-sm text-slate-800">Zahtevi za tender</h2>
+              <span id="requestCountBadge" class="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700">0</span>
+            </div>
+            <button onclick="openRequestModal()" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-semibold transition shadow-sm">
+              + Novi zahtev
+            </button>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-slate-500">
+            <span id="activeClientIndicator" class="truncate font-medium text-slate-700">Svi klijenti</span>
+            <select id="requestStatusFilter" onchange="renderAll()" class="bg-white border border-slate-300 rounded px-1.5 py-0.5 text-[11px] focus:outline-none">
+              <option value="ALL">Svi statusi</option>
+              <option value="Novi">Novi</option>
+              <option value="U obradi">U obradi</option>
+              <option value="Poslat">Poslat</option>
+              <option value="Dobijen">Dobijen</option>
+              <option value="Izgubljen">Izgubljen</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="requestsList" class="flex-1 overflow-y-auto col-scroll p-2.5 space-y-2.5">
+          <!-- Dinamički render zahteva -->
+        </div>
+      </section>
+
+      <!-- KOLONA 3: IZRADA TENDERA / PONUDE -->
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+        <div class="p-3 border-b border-slate-200 bg-slate-50/70 shrink-0">
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center">3</span>
+              <h2 class="font-bold text-sm text-slate-800">Izrada tendera</h2>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="openPrintPreview()" id="printQuoteBtn" class="hidden px-2 py-1 rounded bg-slate-200 hover:bg-slate-300 text-slate-800 text-[11px] font-semibold transition">
+                Štampa / PDF
+              </button>
+              <button onclick="saveCurrentQuote()" id="saveQuoteBtn" class="hidden px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold transition shadow-sm">
+                Sačuvaj ponudu
+              </button>
+            </div>
+          </div>
+          <p id="quoteHeaderSubtitle" class="text-[11px] text-slate-500 truncate">Izaberite zahtev iz Kolone 2 za izradu ponude</p>
+        </div>
+
+        <div id="quoteBuilderContainer" class="flex-1 overflow-y-auto col-scroll p-3 flex flex-col">
+          <!-- Dinamički render radnog prostora za izradu tendera -->
+        </div>
+      </section>
+
+      <!-- KOLONA 4: BAZA ARTIKALA -->
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+        <div class="p-3 border-b border-slate-200 bg-slate-50/70 shrink-0">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center">4</span>
+              <h2 class="font-bold text-sm text-slate-800">Baza artikala</h2>
+              <span id="catalogCountBadge" class="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700">0</span>
+            </div>
+            <button onclick="openProductModal()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium transition shadow-sm">
+              + Artikal
+            </button>
+          </div>
+          <div class="flex gap-1.5">
+            <input type="text" id="productSearchInput" oninput="renderAll()" placeholder="Šifra, naziv, dimenzije..." class="flex-1 px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+            <select id="productCategoryFilter" onchange="renderAll()" class="px-2 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none">
+              <option value="ALL">Sve kat.</option>
+              <option value="Radni stolovi">Stolovi</option>
+              <option value="Ergonomske stolice">Stolice</option>
+              <option value="Ormari i fiokari">Ormari</option>
+              <option value="Konferencijski program">Konferenc.</option>
+              <option value="Recepcija i lounge">Lounge</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="catalogList" class="flex-1 overflow-y-auto col-scroll p-2.5 space-y-2">
+          <!-- Dinamički render kataloga -->
+        </div>
+      </section>
+
+      <!-- KOLONA 5: HISTORY / ISTORIJA SVIH TENDERA -->
+      <section class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+        <div class="p-3 border-b border-slate-200 bg-slate-50/70 shrink-0">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center">5</span>
+              <h2 class="font-bold text-sm text-slate-800">History / Istorija</h2>
+              <span id="historyCountBadge" class="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700">0</span>
+            </div>
+            <span class="text-[10px] uppercase tracking-wider font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Auto-sync</span>
+          </div>
+
+          <!-- Filteri za istoriju -->
+          <div class="space-y-1.5">
+            <div class="flex gap-1.5">
+              <select id="historyClientFilter" onchange="renderHistory()" class="flex-1 px-2 py-1 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none">
+                <option value="ALL">Svi klijenti</option>
+              </select>
+              <select id="historyTypeFilter" onchange="renderHistory()" class="px-2 py-1 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none">
+                <option value="ALL">Sve promene</option>
+                <option value="KREIRAN_ZAHTEV">Novi zahtevi</option>
+                <option value="IZMENA_ZAHTEVA">Izmene zahteva</option>
+                <option value="PROMENA_STATUSA">Statusi</option>
+                <option value="AZURIRANA_PONUDA">Ponude</option>
+              </select>
+            </div>
+            <input type="text" id="historySearchInput" oninput="renderHistory()" placeholder="Pretraži istoriju izmena..." class="w-full px-2.5 py-1 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+
+        <div id="historyList" class="flex-1 overflow-y-auto col-scroll p-2.5 space-y-2">
+          <!-- Dinamički render istorije -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- MODAL: KLIJENT (DODAVANJE / IZMENA) -->
+  <div id="clientModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full border border-slate-200 shadow-xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
+        <h3 id="clientModalTitle" class="font-bold text-sm">Novi klijent</h3>
+        <button onclick="closeModal('clientModal')" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+      </div>
+      <form id="clientForm" onsubmit="saveClient(event)" class="p-4 space-y-3 text-xs">
+        <input type="hidden" id="clientIdInput" />
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Naziv firme *</label>
+          <input type="text" id="clientNameInput" required placeholder="npr. Delta Holding d.o.o." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">PIB / Matični broj *</label>
+            <input type="text" id="clientPibInput" required placeholder="100123456" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Grad / Adresa</label>
+            <input type="text" id="clientAddressInput" placeholder="Beograd, Milentija Popovića 7b" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Kontakt osoba *</label>
+            <input type="text" id="clientContactInput" required placeholder="Marko Marković" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Telefon *</label>
+            <input type="text" id="clientPhoneInput" required placeholder="+381 64 123 4567" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Email adresa *</label>
+          <input type="email" id="clientEmailInput" required placeholder="nabavka@firma.rs" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Napomena o klijentu</label>
+          <textarea id="clientNotesInput" rows="2" placeholder="Uslovi plaćanja, specifični zahtevi isporuke..." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+        <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="closeModal('clientModal')" class="px-3
