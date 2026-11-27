@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+html_content = """<!DOCTYPE html>
 <html lang="sr">
 <head>
   <meta charset="UTF-8" />
@@ -285,4 +285,1530 @@
           <textarea id="clientNotesInput" rows="2" placeholder="Uslovi plaćanja, specifični zahtevi isporuke..." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500"></textarea>
         </div>
         <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
-          <button type="button" onclick="closeModal('clientModal')" class="px-3
+          <button type="button" onclick="closeModal('clientModal')" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Otkaži</button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-slate-900 text-white font-semibold hover:bg-slate-800">Sačuvaj klijenta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ZAHTEV ZA TENDER (DODAVANJE / IZMENA) -->
+  <div id="requestModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-lg w-full border border-slate-200 shadow-xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
+        <h3 id="requestModalTitle" class="font-bold text-sm">Novi zahtev za tender</h3>
+        <button onclick="closeModal('requestModal')" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+      </div>
+      <form id="requestForm" onsubmit="saveRequest(event)" class="p-4 space-y-3 text-xs">
+        <input type="hidden" id="requestIdInput" />
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Klijent (automatsko povezivanje) *</label>
+          <select id="requestClientSelect" required class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-amber-500">
+            <!-- Popunjava se dinamički -->
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Naziv tendera / Predmet nabavke *</label>
+          <input type="text" id="requestTitleInput" required placeholder="npr. Opremanje 35 radnih mesta - Novi Beograd" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Rok za predaju ponude *</label>
+            <input type="date" id="requestDeadlineInput" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Status tendera</label>
+            <select id="requestStatusSelect" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-amber-500">
+              <option value="Novi">Novi</option>
+              <option value="U obradi">U obradi</option>
+              <option value="Poslat">Poslat</option>
+              <option value="Dobijen">Dobijen</option>
+              <option value="Izgubljen">Izgubljen</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Specifikacija zahteva klijenta *</label>
+          <textarea id="requestSpecInput" rows="4" required placeholder="Detaljan opis šta firma traži (npr. 35 radnih stolova 160x80 bela/hrast, 35 ergonomskih stolica sa lumbalnom podrškom, 10 visokih ormara sa bravicom...)" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-[11px] text-amber-900">
+          Svaka izmena ovog zahteva automatski se beleži u <strong>Koloni 5 (History)</strong> sa tačnim vremenom i opisom promene.
+        </div>
+        <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="closeModal('requestModal')" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Otkaži</button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-semibold hover:bg-amber-600">Sačuvaj zahtev</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVI / IZMENA ARTIKLA U BAZI -->
+  <div id="productModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full border border-slate-200 shadow-xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
+        <h3 id="productModalTitle" class="font-bold text-sm">Novi artikal u katalogu</h3>
+        <button onclick="closeModal('productModal')" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+      </div>
+      <form id="productForm" onsubmit="saveProduct(event)" class="p-4 space-y-3 text-xs">
+        <input type="hidden" id="productIdInput" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Šifra artikla (SKU) *</label>
+            <input type="text" id="productSkuInput" required placeholder="ST-160-HR" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Kategorija *</label>
+            <select id="productCatInput" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:border-amber-500">
+              <option value="Radni stolovi">Radni stolovi</option>
+              <option value="Ergonomske stolice">Ergonomske stolice</option>
+              <option value="Ormari i fiokari">Ormari i fiokari</option>
+              <option value="Konferencijski program">Konferencijski program</option>
+              <option value="Recepcija i lounge">Recepcija i lounge</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Naziv artikla *</label>
+          <input type="text" id="productNameInput" required placeholder="Radni sto ErgoDesk 160x80" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Dimenzije / Materijal</label>
+            <input type="text" id="productSpecsInput" placeholder="160x80x75 cm, univer 25mm" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Jedinična cena (EUR bez PDV) *</label>
+            <input type="number" step="0.01" min="0" id="productPriceInput" required placeholder="185.00" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Stanje lagera / Rok isporuke</label>
+          <input type="text" id="productStockInput" placeholder="Na lageru (120 kom) / Isporuka 3 dana" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500" />
+        </div>
+        <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="closeModal('productModal')" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Otkaži</button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-slate-900 text-white font-semibold hover:bg-slate-800">Sačuvaj artikal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: POVEZIVANJE SA GOOGLE FIREBASE-OM -->
+  <div id="firebaseModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-lg w-full border border-slate-200 shadow-xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
+        <h3 class="font-bold text-sm">Povezivanje sa Google Firebase (Firestore)</h3>
+        <button onclick="closeModal('firebaseModal')" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+      </div>
+      <div class="p-4 space-y-3 text-xs">
+        <p class="text-slate-600 leading-relaxed">
+          Aplikacija je spremna za rad u realnom vremenu sa <strong>Firebase Firestore</strong> bazom. Nalepite vaš <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-800">firebaseConfig</code> JSON objekat iz Firebase Console &rarr; Project Settings.
+        </p>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Firebase Config (JSON format)</label>
+          <textarea id="firebaseConfigTextarea" rows="7" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "vas-projekat.firebaseapp.com",
+  "projectId": "vas-projekat",
+  "storageBucket": "vas-projekat.appspot.com",
+  "messagingSenderId": "123456789",
+  "appId": "1:123456789:web:abcdef"
+}' class="w-full p-2.5 font-mono text-[11px] border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500 bg-slate-50"></textarea>
+        </div>
+        <div class="bg-slate-100 rounded-lg p-2.5 text-[11px] text-slate-600">
+          <strong>Savet za GitHub:</strong> Možete upisati ovaj config i direktno u samom <code>index.html</code> fajlu (u promenljivu <code>HARDCODED_FIREBASE_CONFIG</code>) tako da svi zaposleni automatski koriste istu bazu bez ručnog unosa.
+        </div>
+        <div class="pt-2 flex items-center justify-between border-t border-slate-100">
+          <button type="button" onclick="disconnectFirebase()" class="px-3 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 font-medium">Koristi lokalnu bazu</button>
+          <div class="flex gap-2">
+            <button type="button" onclick="closeModal('firebaseModal')" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Zatvori</button>
+            <button type="button" onclick="saveFirebaseConfig()" class="px-4 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-semibold hover:bg-amber-600">Poveži Firebase</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PREGLED ZA ŠTAMPU / PDF PONUDE -->
+  <div id="printModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] flex flex-col border border-slate-200 shadow-2xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between no-print">
+        <h3 class="font-bold text-sm">Pregled tenderske ponude za štampu / PDF</h3>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="px-3 py-1 rounded bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-semibold">Štampaj / Sačuvaj PDF</button>
+          <button onclick="closeModal('printModal')" class="text-slate-400 hover:text-white text-lg leading-none px-1">&times;</button>
+        </div>
+      </div>
+      <div id="printArea" class="p-6 overflow-y-auto text-xs text-slate-800 space-y-5">
+        <!-- Popunjava se dinamički -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST OBAVEŠTENJA -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- LOGIKA APLIKACIJE + FIREBASE MODUL -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      setDoc,
+      deleteDoc,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Ako želite da hardkodujete Firebase konfiguraciju pre postavljanja na GitHub, nalepite objekat umesto null:
+    const HARDCODED_FIREBASE_CONFIG = null;
+
+    const EUR_TO_RSD = 117.2;
+
+    // Početni demo podaci
+    const DEFAULT_DATA = {
+      clients: [
+        {
+          id: "cli_1",
+          name: "TechHub Solutions d.o.o.",
+          pib: "109845123",
+          address: "Bulevar Milutina Milankovića 11a, Novi Beograd",
+          contact: "Jelena Petrović",
+          phone: "+381 63 441 890",
+          email: "jelena.petrovic@techhub.rs",
+          notes: "IT kompanija, traže moderan ergonomski nameštaj i brzu montažu."
+        },
+        {
+          id: "cli_2",
+          name: "Panonija Banka a.d.",
+          pib: "100293847",
+          address: "Bulevar Oslobođenja 88, Novi Sad",
+          contact: "Nemanja Kovačević",
+          phone: "+381 64 882 110",
+          email: "nabavke@panonijabanka.rs",
+          notes: "Bankarski sektor - obavezno poštovanje rokova i sertifikata kvaliteta."
+        },
+        {
+          id: "cli_3",
+          name: "Gradska uprava - Sektor za opšte poslove",
+          pib: "101556789",
+          address: "Trg Nikole Pašića 6, Beograd",
+          contact: "Dragan Ilić",
+          phone: "+381 11 322 4500",
+          email: "javne.nabavke@uprava.gov.rs",
+          notes: "Javni tenderi, plaćanje 45 dana po primopredaji."
+        }
+      ],
+      requests: [
+        {
+          id: "req_101",
+          clientId: "cli_1",
+          title: "Opremanje novog IT sprata (20 radnih mesta)",
+          deadline: "2026-12-15",
+          status: "U obradi",
+          spec: "Potrebno 20 radnih stolova 160x80cm (bela ploča / metalne noge), 20 ergonomskih mrežastih stolica sa 3D rukonaslonima i 20 mobilnih fiokara sa bravicom.",
+          createdAt: "2026-11-24T09:15:00.000Z",
+          updatedAt: "2026-11-26T14:20:00.000Z"
+        },
+        {
+          id: "req_102",
+          clientId: "cli_2",
+          title: "Sala za sastanke i menadžerske kancelarije",
+          deadline: "2026-12-20",
+          status: "Novi",
+          spec: "1 konferencijski sto za 12 osoba (360x120cm) sa integrisanim kutijama za struju, 12 kožnih konferencijskih stolica i 4 visoka ormara za registratore.",
+          createdAt: "2026-11-25T11:30:00.000Z",
+          updatedAt: "2026-11-25T11:30:00.000Z"
+        },
+        {
+          id: "req_103",
+          clientId: "cli_3",
+          title: "Nabavka kancelarijskih ormara i pulta",
+          deadline: "2026-12-10",
+          status: "Poslat",
+          spec: "15 dvokrilnih ormara sa ključem (visina 200cm) u dekoru svetli hrast i 1 recepcijski pult 240cm.",
+          createdAt: "2026-11-20T08:45:00.000Z",
+          updatedAt: "2026-11-27T10:05:00.000Z"
+        }
+      ],
+      products: [
+        {
+          id: "prd_1",
+          sku: "ST-160-WH",
+          category: "Radni stolovi",
+          name: "Radni sto ErgoLine 160x80",
+          specs: "160x80x75 cm, univer 25mm, metalna konstrukcija",
+          priceEur: 185,
+          stock: "Na lageru (65 kom)"
+        },
+        {
+          id: "prd_2",
+          sku: "CH-MESH-PRO",
+          category: "Ergonomske stolice",
+          name: "Ergonomska stolica AeroMesh Pro",
+          specs: "Sinhro mehanizam, 3D rukonasloni, lumbalna podrška",
+          priceEur: 240,
+          stock: "Na lageru (48 kom)"
+        },
+        {
+          id: "prd_3",
+          sku: "FK-3D-LOCK",
+          category: "Ormari i fiokari",
+          name: "Mobilni fiokar sa 3 fioke i bravicom",
+          specs: "42x55x60 cm, centralno zaključavanje, točkići",
+          priceEur: 95,
+          stock: "Na lageru (80 kom)"
+        },
+        {
+          id: "prd_4",
+          sku: "OR-200-HR",
+          category: "Ormari i fiokari",
+          name: "Visoki kancelarijski ormar 200cm",
+          specs: "80x42x200 cm, 5 nivoa registratora, bravica",
+          priceEur: 210,
+          stock: "Na lageru (34 kom)"
+        },
+        {
+          id: "prd_5",
+          sku: "CF-360-LUX",
+          category: "Konferencijski program",
+          name: "Konferencijski sto BoardMax 360x120",
+          specs: "360x120x75 cm, 2x kablovska kutija, orah/crna",
+          priceEur: 680,
+          stock: "Isporuka 5 dana"
+        },
+        {
+          id: "prd_6",
+          sku: "CH-CONF-SL",
+          category: "Konferencijski program",
+          name: "Konferencijska stolica SoftLine",
+          specs: "Eko koža / hromirane sanke, nosivost 130kg",
+          priceEur: 135,
+          stock: "Na lageru (50 kom)"
+        },
+        {
+          id: "prd_7",
+          sku: "RC-240-MOD",
+          category: "Recepcija i lounge",
+          name: "Recepcijski pult Welcome 240",
+          specs: "240x85x115 cm, LED rasveta, kaljeno staklo",
+          priceEur: 890,
+          stock: "Po porudžbini (7 dana)"
+        }
+      ],
+      quotes: {
+        req_101: {
+          requestId: "req_101",
+          quoteNumber: "PON-2026-101",
+          discountPercent: 5,
+          deliveryTerms: "Isporuka i montaža uključeni u cenu. Rok: 5 radnih dana.",
+          items: [
+            { productId: "prd_1", sku: "ST-160-WH", name: "Radni sto ErgoLine 160x80", qty: 20, unitPriceEur: 185 },
+            { productId: "prd_2", sku: "CH-MESH-PRO", name: "Ergonomska stolica AeroMesh Pro", qty: 20, unitPriceEur: 240 },
+            { productId: "prd_3", sku: "FK-3D-LOCK", name: "Mobilni fiokar sa 3 fioke i bravicom", qty: 20, unitPriceEur: 95 }
+          ],
+          updatedAt: "2026-11-26T14:20:00.000Z"
+        },
+        req_103: {
+          requestId: "req_103",
+          quoteNumber: "PON-2026-103",
+          discountPercent: 0,
+          deliveryTerms: "Isporuka franko kupac, plaćanje 45 dana.",
+          items: [
+            { productId: "prd_4", sku: "OR-200-HR", name: "Visoki kancelarijski ormar 200cm", qty: 15, unitPriceEur: 210 },
+            { productId: "prd_7", sku: "RC-240-MOD", name: "Recepcijski pult Welcome 240", qty: 1, unitPriceEur: 890 }
+          ],
+          updatedAt: "2026-11-27T10:05:00.000Z"
+        }
+      },
+      history: [
+        {
+          id: "hist_1",
+          timestamp: "2026-11-24T09:15:00.000Z",
+          clientId: "cli_1",
+          requestId: "req_101",
+          type: "KREIRAN_ZAHTEV",
+          summary: "Kreiran zahtev: Opremanje novog IT sprata (20 radnih mesta)",
+          details: "Status: Novi | Rok: 2026-12-15"
+        },
+        {
+          id: "hist_2",
+          timestamp: "2026-11-26T14:20:00.000Z",
+          clientId: "cli_1",
+          requestId: "req_101",
+          type: "PROMENA_STATUSA",
+          summary: "Status promenjen: Novi → U obradi",
+          details: "Tender: Opremanje novog IT sprata (20 radnih mesta)"
+        },
+        {
+          id: "hist_3",
+          timestamp: "2026-11-25T11:30:00.000Z",
+          clientId: "cli_2",
+          requestId: "req_102",
+          type: "KREIRAN_ZAHTEV",
+          summary: "Kreiran zahtev: Sala za sastanke i menadžerske kancelarije",
+          details: "Status: Novi | Rok: 2026-12-20"
+        },
+        {
+          id: "hist_4",
+          timestamp: "2026-11-27T10:05:00.000Z",
+          clientId: "cli_3",
+          requestId: "req_103",
+          type: "AZURIRANA_PONUDA",
+          summary: "Sačuvana ponuda PON-2026-103 (2 stavke)",
+          details: "Ukupno sa PDV-om: 4.848,00 €"
+        }
+      ]
+    };
+
+    // Stanje aplikacije
+    let state = {
+      clients: [],
+      requests: [],
+      products: [],
+      quotes: {},
+      history: [],
+      selectedClientId: null,
+      selectedRequestId: "req_101",
+      currency: "EUR",
+      useFirebase: false,
+      db: null,
+      unsubscribers: []
+    };
+
+    // Inicijalizacija
+    function init() {
+      const savedConfig = localStorage.getItem("tenderpro_firebase_config");
+      const configToUse = HARDCODED_FIREBASE_CONFIG || (savedConfig ? JSON.parse(savedConfig) : null);
+
+      if (configToUse) {
+        connectFirebase(configToUse, false);
+      } else {
+        loadFromLocalStorage();
+      }
+    }
+
+    function loadFromLocalStorage() {
+      const raw = localStorage.getItem("tenderpro_data_v1");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        state.clients = parsed.clients || [];
+        state.requests = parsed.requests || [];
+        state.products = parsed.products || [];
+        state.quotes = parsed.quotes || {};
+        state.history = parsed.history || [];
+      } else {
+        state.clients = structuredClone(DEFAULT_DATA.clients);
+        state.requests = structuredClone(DEFAULT_DATA.requests);
+        state.products = structuredClone(DEFAULT_DATA.products);
+        state.quotes = structuredClone(DEFAULT_DATA.quotes);
+        state.history = structuredClone(DEFAULT_DATA.history);
+        saveToLocalStorage();
+      }
+
+      if (!state.selectedRequestId && state.requests.length > 0) {
+        state.selectedRequestId = state.requests[0].id;
+      }
+
+      updateDbStatusUI(false);
+      renderAll();
+    }
+
+    function saveToLocalStorage() {
+      if (state.useFirebase) return;
+      localStorage.setItem(
+        "tenderpro_data_v1",
+        JSON.stringify({
+          clients: state.clients,
+          requests: state.requests,
+          products: state.products,
+          quotes: state.quotes,
+          history: state.history
+        })
+      );
+    }
+
+    // Firebase sinhronizacija
+    function connectFirebase(config, showSuccessToast = true) {
+      try {
+        const app = initializeApp(config, "TenderProApp_" + Date.now());
+        const db = getFirestore(app);
+        state.db = db;
+        state.useFirebase = true;
+
+        // Očisti prethodne osluškivače
+        state.unsubscribers.forEach((unsub) => unsub());
+        state.unsubscribers = [];
+
+        const collections = ["clients", "requests", "products", "quotes", "history"];
+        collections.forEach((colName) => {
+          const unsub = onSnapshot(
+            collection(db, `tenderpro_${colName}`),
+            (snapshot) => {
+              if (colName === "quotes") {
+                const qMap = {};
+                snapshot.forEach((d) => {
+                  qMap[d.id] = d.data();
+                });
+                state.quotes = qMap;
+              } else {
+                const arr = [];
+                snapshot.forEach((d) => arr.push(d.data()));
+                state[colName] = arr;
+              }
+              renderAll();
+            },
+            (err) => {
+              console.error("Firebase greška:", err);
+              showToast("Greška pri čitanju iz Firebase baze. Proverite Firestore pravila.", "error");
+            }
+          );
+          state.unsubscribers.push(unsub);
+        });
+
+        updateDbStatusUI(true);
+        if (showSuccessToast) showToast("Povezano sa Google Firebase Firestore bazom!", "success");
+      } catch (e) {
+        console.error(e);
+        showToast("Neispravna Firebase konfiguracija.", "error");
+        loadFromLocalStorage();
+      }
+    }
+
+    async function persistRecord(colName, id, data) {
+      if (state.useFirebase && state.db) {
+        await setDoc(doc(state.db, `tenderpro_${colName}`, id), data);
+      } else {
+        saveToLocalStorage();
+        renderAll();
+      }
+    }
+
+    async function removeRecord(colName, id) {
+      if (state.useFirebase && state.db) {
+        await deleteDoc(doc(state.db, `tenderpro_${colName}`, id));
+      } else {
+        saveToLocalStorage();
+        renderAll();
+      }
+    }
+
+    // Automatsko beleženje u Kolonu 5 (History)
+    async function logHistoryEvent({ clientId, requestId, type, summary, details }) {
+      const entry = {
+        id: "hist_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        timestamp: new Date().toISOString(),
+        clientId,
+        requestId,
+        type,
+        summary,
+        details
+      };
+      state.history.unshift(entry);
+      await persistRecord("history", entry.id, entry);
+    }
+
+    // Pomoćne funkcije za formatiranje
+    function formatMoney(amountEur) {
+      if (state.currency === "RSD") {
+        const rsd = amountEur * EUR_TO_RSD;
+        return new Intl.NumberFormat("sr-RS", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(rsd) + " RSD";
+      }
+      return new Intl.NumberFormat("sr-RS", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amountEur) + " €";
+    }
+
+    function formatDateTime(isoStr) {
+      if (!isoStr) return "";
+      const d = new Date(isoStr);
+      return d.toLocaleDateString("sr-RS", { day: "2-digit", month: "2-digit", year: "numeric" }) +
+        " " +
+        d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function getStatusBadgeClass(status) {
+      switch (status) {
+        case "Novi":
+          return "bg-sky-100 text-sky-800 border-sky-200";
+        case "U obradi":
+          return "bg-amber-100 text-amber-800 border-amber-200";
+        case "Poslat":
+          return "bg-indigo-100 text-indigo-800 border-indigo-200";
+        case "Dobijen":
+          return "bg-emerald-100 text-emerald-800 border-emerald-200";
+        case "Izgubljen":
+          return "bg-rose-100 text-rose-800 border-rose-200";
+        default:
+          return "bg-slate-100 text-slate-700 border-slate-200";
+      }
+    }
+
+    // RENDEROVANJE SVIH 5 KOLONA
+    window.renderAll = function () {
+      renderClients();
+      renderRequests();
+      renderQuoteBuilder();
+      renderCatalog();
+      populateHistoryClientFilter();
+      renderHistory();
+    };
+
+    // KOLONA 1: KLIJENTI
+    function renderClients() {
+      const container = document.getElementById("clientsList");
+      const query = document.getElementById("clientSearchInput").value.trim().toLowerCase();
+      const showAllBtn = document.getElementById("showAllClientsBtn");
+
+      showAllBtn.classList.toggle("hidden", !state.selectedClientId);
+
+      const filtered = state.clients.filter((c) => {
+        if (!query) return true;
+        return (
+          c.name.toLowerCase().includes(query) ||
+          c.pib.toLowerCase().includes(query) ||
+          c.contact.toLowerCase().includes(query) ||
+          c.email.toLowerCase().includes(query)
+        );
+      });
+
+      document.getElementById("clientCountBadge").textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">Nema pronađenih klijenata.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered
+        .map((client) => {
+          const isSelected = state.selectedClientId === client.id;
+          const reqCount = state.requests.filter((r) => r.clientId === client.id).length;
+
+          return `
+            <div onclick="selectClient('${client.id}')" class="p-3 rounded-xl border transition cursor-pointer ${
+              isSelected
+                ? "bg-amber-50/70 border-amber-400 ring-1 ring-amber-400 shadow-xs"
+                : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60"
+            }">
+              <div class="flex items-start justify-between gap-2">
+                <h3 class="font-bold text-xs text-slate-900 leading-snug">${escapeHtml(client.name)}</h3>
+                <span class="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                  ${reqCount} tend.
+                </span>
+              </div>
+              <div class="mt-1.5 space-y-0.5 text-[11px] text-slate-600">
+                <div class="flex items-center justify-between">
+                  <span>PIB: <strong class="text-slate-800">${escapeHtml(client.pib)}</strong></span>
+                  <span class="text-slate-500">${escapeHtml(client.contact)}</span>
+                </div>
+                <div class="truncate text-slate-500">${escapeHtml(client.phone)} • ${escapeHtml(client.email)}</div>
+                ${client.address ? `<div class="truncate text-[10px] text-slate-400">${escapeHtml(client.address)}</div>` : ""}
+              </div>
+              <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <button onclick="event.stopPropagation(); openRequestModalForClient('${client.id}')" class="text-[11px] font-semibold text-amber-700 hover:text-amber-800">
+                  + Novi tender
+                </button>
+                <div class="flex items-center gap-2">
+                  <button onclick="event.stopPropagation(); openClientModal('${client.id}')" class="text-[11px] text-slate-500 hover:text-slate-800">Izmeni</button>
+                  <button onclick="event.stopPropagation(); deleteClient('${client.id}')" class="text-[11px] text-rose-500 hover:text-rose-700">Obriši</button>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    // KOLONA 2: ZAHTEVI ZA TENDER
+    function renderRequests() {
+      const container = document.getElementById("requestsList");
+      const statusFilter = document.getElementById("requestStatusFilter").value;
+      const indicator = document.getElementById("activeClientIndicator");
+
+      if (state.selectedClientId) {
+        const cl = state.clients.find((c) => c.id === state.selectedClientId);
+        indicator.innerHTML = `Klijent: <strong class="text-amber-700">${escapeHtml(cl ? cl.name : "")}</strong>`;
+      } else {
+        indicator.textContent = "Prikazani zahtevi svih klijenata";
+      }
+
+      const filtered = state.requests
+        .filter((r) => (!state.selectedClientId ? true : r.clientId === state.selectedClientId))
+        .filter((r) => (statusFilter === "ALL" ? true : r.status === statusFilter))
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+      document.getElementById("requestCountBadge").textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">Nema zahteva za izabrani filter.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered
+        .map((req) => {
+          const client = state.clients.find((c) => c.id === req.clientId);
+          const isSelected = state.selectedRequestId === req.id;
+          const quote = state.quotes[req.id];
+          const itemCount = quote && quote.items ? quote.items.length : 0;
+
+          return `
+            <div onclick="selectRequest('${req.id}')" class="p-3 rounded-xl border transition cursor-pointer ${
+              isSelected
+                ? "bg-slate-900 text-white border-slate-900 shadow-md"
+                : "bg-white border-slate-200 hover:border-slate-300"
+            }">
+              <div class="flex items-start justify-between gap-2 mb-1">
+                <span class="text-[10px] font-semibold uppercase tracking-wide ${isSelected ? "text-amber-400" : "text-slate-500"}">
+                  ${escapeHtml(client ? client.name : "Nepoznat klijent")}
+                </span>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getStatusBadgeClass(req.status)}">
+                  ${escapeHtml(req.status)}
+                </span>
+              </div>
+
+              <h3 class="font-bold text-xs leading-snug mb-1.5 ${isSelected ? "text-white" : "text-slate-900"}">
+                ${escapeHtml(req.title)}
+              </h3>
+
+              <p class="text-[11px] line-clamp-3 leading-relaxed mb-2.5 ${isSelected ? "text-slate-300" : "text-slate-600"}">
+                ${escapeHtml(req.spec)}
+              </p>
+
+              <div class="flex items-center justify-between text-[10px] pt-2 border-t ${isSelected ? "border-slate-800 text-slate-400" : "border-slate-100 text-slate-500"}">
+                <span>Rok: <strong class="${isSelected ? "text-slate-200" : "text-slate-700"}">${escapeHtml(req.deadline)}</strong></span>
+                <span>Ponuda: <strong class="${isSelected ? "text-amber-400" : "text-slate-700"}">${itemCount} stavki</strong></span>
+              </div>
+
+              <div class="mt-2 flex items-center justify-between gap-2">
+                <select onclick="event.stopPropagation()" onchange="quickChangeRequestStatus('${req.id}', this.value)" class="text-[11px] rounded px-1.5 py-0.5 border focus:outline-none ${
+                  isSelected ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-50 border-slate-200 text-slate-700"
+                }">
+                  <option value="Novi" ${req.status === "Novi" ? "selected" : ""}>Status: Novi</option>
+                  <option value="U obradi" ${req.status === "U obradi" ? "selected" : ""}>Status: U obradi</option>
+                  <option value="Poslat" ${req.status === "Poslat" ? "selected" : ""}>Status: Poslat</option>
+                  <option value="Dobijen" ${req.status === "Dobijen" ? "selected" : ""}>Status: Dobijen</option>
+                  <option value="Izgubljen" ${req.status === "Izgubljen" ? "selected" : ""}>Status: Izgubljen</option>
+                </select>
+
+                <div class="flex items-center gap-2">
+                  <button onclick="event.stopPropagation(); openRequestModal('${req.id}')" class="text-[11px] font-medium ${isSelected ? "text-amber-400 hover:underline" : "text-slate-600 hover:text-slate-900"}">
+                    Izmeni
+                  </button>
+                  <button onclick="event.stopPropagation(); deleteRequest('${req.id}')" class="text-[11px] text-rose-400 hover:text-rose-500">
+                    Obriši
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    // KOLONA 3: IZRADA TENDERA (PONUDE)
+    function renderQuoteBuilder() {
+      const container = document.getElementById("quoteBuilderContainer");
+      const subtitle = document.getElementById("quoteHeaderSubtitle");
+      const printBtn = document.getElementById("printQuoteBtn");
+      const saveBtn = document.getElementById("saveQuoteBtn");
+
+      const req = state.requests.find((r) => r.id === state.selectedRequestId);
+      if (!req) {
+        subtitle.textContent = "Izaberite zahtev iz Kolone 2 za izradu ponude";
+        printBtn.classList.add("hidden");
+        saveBtn.classList.add("hidden");
+        container.innerHTML = `
+          <div class="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-400">
+            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold mb-2">3</div>
+            <p class="text-xs font-medium text-slate-600">Nijedan zahtev nije izabran</p>
+            <p class="text-[11px] mt-1">Kliknite na bilo koji zahtev u Koloni 2 da biste započeli kalkulaciju i dodavali artikle iz Kolone 4.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const client = state.clients.find((c) => c.id === req.clientId);
+      printBtn.classList.remove("hidden");
+      saveBtn.classList.remove("hidden");
+      subtitle.innerHTML = `Za: <strong class="text-slate-800">${escapeHtml(client ? client.name : "")}</strong> — ${escapeHtml(req.title)}`;
+
+      if (!state.quotes[req.id]) {
+        state.quotes[req.id] = {
+          requestId: req.id,
+          quoteNumber: "PON-" + new Date().getFullYear() + "-" + req.id.replace(/\\D/g, "").slice(-3).padStart(3, "0"),
+          discountPercent: 0,
+          deliveryTerms: "Isporuka i montaža na adresu kupca. Rok isporuke: 7 radnih dana.",
+          items: [],
+          updatedAt: new Date().toISOString()
+        };
+      }
+
+      const quote = state.quotes[req.id];
+      const subtotalEur = quote.items.reduce((sum, item) => sum + item.qty * item.unitPriceEur, 0);
+      const discountAmountEur = subtotalEur * ((Number(quote.discountPercent) || 0) / 100);
+      const netTotalEur = subtotalEur - discountAmountEur;
+      const vatEur = netTotalEur * 0.2;
+      const grandTotalEur = netTotalEur + vatEur;
+
+      container.innerHTML = `
+        <div class="space-y-3 flex-1 flex flex-col">
+          <!-- Podaci zaglavlja ponude -->
+          <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 uppercase">Broj ponude</label>
+              <input type="text" value="${escapeHtml(quote.quoteNumber)}" onchange="updateQuoteField('quoteNumber', this.value)" class="w-full mt-0.5 px-2 py-1 bg-white border border-slate-300 rounded text-xs font-semibold" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 uppercase">Rabat (%)</label>
+              <input type="number" min="0" max="100" step="0.5" value="${quote.discountPercent}" onchange="updateQuoteField('discountPercent', parseFloat(this.value) || 0)" class="w-full mt-0.5 px-2 py-1 bg-white border border-slate-300 rounded text-xs font-semibold" />
+            </div>
+          </div>
+
+          <!-- Podsetnik na zahtev klijenta -->
+          <div class="bg-amber-50/70 border border-amber-200 rounded-lg p-2 text-[11px] text-slate-700">
+            <span class="font-bold text-amber-900">Tražena specifikacija:</span> ${escapeHtml(req.spec)}
+          </div>
+
+          <!-- Stavke ponude -->
+          <div class="flex-1 space-y-2">
+            <div class="flex items-center justify-between text-[11px] font-semibold text-slate-600">
+              <span>Stavke ponude (${quote.items.length})</span>
+              <span class="text-[10px] text-slate-400">Dodajte iz Kolone 4 &rarr;</span>
+            </div>
+
+            ${
+              quote.items.length === 0
+                ? `<div class="border border-dashed border-slate-300 rounded-lg p-4 text-center text-[11px] text-slate-400">
+                    Ponuda je trenutno prazna. Kliknite <strong>+ Dodaj u tender</strong> na bilo kom artiklu u Koloni 4.
+                   </div>`
+                : quote.items
+                    .map(
+                      (item, idx) => `
+                  <div class="p-2.5 rounded-lg border border-slate-200 bg-white text-xs space-y-1.5">
+                    <div class="flex items-start justify-between gap-2">
+                      <div>
+                        <span class="text-[10px] font-mono text-slate-400">${escapeHtml(item.sku)}</span>
+                        <h4 class="font-semibold text-slate-800 leading-tight">${escapeHtml(item.name)}</h4>
+                      </div>
+                      <button onclick="removeQuoteItem(${idx})" class="text-rose-500 hover:text-rose-700 text-xs font-bold px-1">&times;</button>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 pt-1">
+                      <div class="flex items-center gap-1.5">
+                        <label class="text-[10px] text-slate-500">Kol:</label>
+                        <input type="number" min="1" value="${item.qty}" onchange="updateQuoteItemQty(${idx}, parseInt(this.value) || 1)" class="w-14 px-1.5 py-0.5 border border-slate-300 rounded text-xs font-semibold text-center" />
+                        <span class="text-[11px] text-slate-500">&times; ${formatMoney(item.unitPriceEur)}</span>
+                      </div>
+                      <span class="font-bold text-slate-900">${formatMoney(item.qty * item.unitPriceEur)}</span>
+                    </div>
+                  </div>
+                `
+                    )
+                    .join("")
+            }
+          </div>
+
+          <!-- Uslovi isporuke -->
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Uslovi isporuke i plaćanja</label>
+            <textarea rows="2" onchange="updateQuoteField('deliveryTerms', this.value)" class="w-full px-2.5 py-1.5 text-[11px] border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500">${escapeHtml(quote.deliveryTerms)}</textarea>
+          </div>
+
+          <!-- Obračun ukupne cene -->
+          <div class="bg-slate-900 text-white rounded-xl p-3 space-y-1 text-xs shrink-0">
+            <div class="flex justify-between text-slate-400">
+              <span>Osnovica:</span>
+              <span>${formatMoney(subtotalEur)}</span>
+            </div>
+            ${
+              discountAmountEur > 0
+                ? `<div class="flex justify-between text-amber-400">
+                    <span>Rabat (${quote.discountPercent}%):</span>
+                    <span>-${formatMoney(discountAmountEur)}</span>
+                   </div>`
+                : ""
+            }
+            <div class="flex justify-between text-slate-300">
+              <span>Neto bez PDV-a:</span>
+              <span>${formatMoney(netTotalEur)}</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>PDV (20%):</span>
+              <span>${formatMoney(vatEur)}</span>
+            </div>
+            <div class="pt-1.5 mt-1 border-t border-slate-700 flex justify-between items-center font-bold text-sm text-emerald-400">
+              <span>UKUPNO SA PDV:</span>
+              <span>${formatMoney(grandTotalEur)}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // KOLONA 4: BAZA ARTIKALA
+    function renderCatalog() {
+      const container = document.getElementById("catalogList");
+      const query = document.getElementById("productSearchInput").value.trim().toLowerCase();
+      const catFilter = document.getElementById("productCategoryFilter").value;
+
+      const filtered = state.products.filter((p) => {
+        const matchesCat = catFilter === "ALL" || p.category === catFilter;
+        const matchesQuery =
+          !query ||
+          p.name.toLowerCase().includes(query) ||
+          p.sku.toLowerCase().includes(query) ||
+          (p.specs && p.specs.toLowerCase().includes(query));
+        return matchesCat && matchesQuery;
+      });
+
+      document.getElementById("catalogCountBadge").textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">Nema artikala u katalogu za zadati kriterijum.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered
+        .map(
+          (prod) => `
+          <div class="p-2.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">${escapeHtml(prod.sku)}</span>
+              <span class="text-[10px] text-slate-500">${escapeHtml(prod.category)}</span>
+            </div>
+            <h4 class="font-bold text-xs text-slate-900 leading-snug">${escapeHtml(prod.name)}</h4>
+            <p class="text-[11px] text-slate-500 leading-tight">${escapeHtml(prod.specs)}</p>
+            <div class="flex items-center justify-between pt-1">
+              <div>
+                <div class="font-bold text-xs text-slate-900">${formatMoney(prod.priceEur)}</div>
+                <div class="text-[10px] text-emerald-700">${escapeHtml(prod.stock || "")}</div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="openProductModal('${prod.id}')" title="Izmeni artikal" class="px-2 py-1 rounded border border-slate-200 hover:bg-slate-100 text-[11px] text-slate-600">
+                  Uredi
+                </button>
+                <button onclick="addProductToActiveQuote('${prod.id}')" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 text-[11px] font-semibold transition shadow-xs">
+                  + Dodaj u tender
+                </button>
+              </div>
+            </div>
+          </div>
+        `
+        )
+        .join("");
+    }
+
+    // KOLONA 5: HISTORY / ISTORIJA SVIH TENDERA
+    function populateHistoryClientFilter() {
+      const select = document.getElementById("historyClientFilter");
+      const currentVal = select.value;
+      select.innerHTML =
+        `<option value="ALL">Svi klijenti (${state.clients.length})</option>` +
+        state.clients
+          .map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`)
+          .join("");
+
+      if ([...select.options].some((o) => o.value === currentVal)) {
+        select.value = currentVal;
+      }
+    }
+
+    window.renderHistory = function () {
+      const container = document.getElementById("historyList");
+      const clientFilter = document.getElementById("historyClientFilter").value;
+      const typeFilter = document.getElementById("historyTypeFilter").value;
+      const query = document.getElementById("historySearchInput").value.trim().toLowerCase();
+
+      const sorted = [...state.history].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      const filtered = sorted.filter((h) => {
+        if (clientFilter !== "ALL" && h.clientId !== clientFilter) return false;
+        if (typeFilter !== "ALL" && h.type !== typeFilter) return false;
+        if (query) {
+          const client = state.clients.find((c) => c.id === h.clientId);
+          const clientName = client ? client.name.toLowerCase() : "";
+          return (
+            h.summary.toLowerCase().includes(query) ||
+            (h.details && h.details.toLowerCase().includes(query)) ||
+            clientName.includes(query)
+          );
+        }
+        return true;
+      });
+
+      document.getElementById("historyCountBadge").textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">Nema zabeleženih aktivnosti za izabrane filtere.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered
+        .map((item) => {
+          const client = state.clients.find((c) => c.id === item.clientId);
+          let badgeColor = "bg-slate-100 text-slate-700";
+          let typeLabel = "Izmena";
+
+          if (item.type === "KREIRAN_ZAHTEV") {
+            badgeColor = "bg-sky-100 text-sky-800";
+            typeLabel = "Novi zahtev";
+          } else if (item.type === "IZMENA_ZAHTEVA") {
+            badgeColor = "bg-amber-100 text-amber-800";
+            typeLabel = "Izmena zahteva";
+          } else if (item.type === "PROMENA_STATUSA") {
+            badgeColor = "bg-indigo-100 text-indigo-800";
+            typeLabel = "Status";
+          } else if (item.type === "AZURIRANA_PONUDA") {
+            badgeColor = "bg-emerald-100 text-emerald-800";
+            typeLabel = "Ponuda";
+          }
+
+          return `
+            <div onclick="jumpToHistoryRequest('${item.requestId}')" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition cursor-pointer space-y-1">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded ${badgeColor}">${typeLabel}</span>
+                <span class="text-[10px] text-slate-400">${formatDateTime(item.timestamp)}</span>
+              </div>
+              <div class="text-[11px] font-bold text-slate-800 truncate">
+                ${escapeHtml(client ? client.name : "Klijent")}
+              </div>
+              <p class="text-[11px] text-slate-700 leading-snug">${escapeHtml(item.summary)}</p>
+              ${item.details ? `<p class="text-[10px] text-slate-500 bg-white px-2 py-1 rounded border border-slate-100">${escapeHtml(item.details)}</p>` : ""}
+            </div>
+          `;
+        })
+        .join("");
+    };
+
+    // AKCIJE KLIJENATA
+    window.selectClient = function (clientId) {
+      state.selectedClientId = state.selectedClientId === clientId ? null : clientId;
+      document.getElementById("historyClientFilter").value = state.selectedClientId || "ALL";
+      renderAll();
+    };
+
+    window.clearClientSelection = function () {
+      state.selectedClientId = null;
+      document.getElementById("clientSearchInput").value = "";
+      document.getElementById("historyClientFilter").value = "ALL";
+      renderAll();
+    };
+
+    window.openClientModal = function (clientId = null) {
+      const form = document.getElementById("clientForm");
+      form.reset();
+      document.getElementById("clientIdInput").value = clientId || "";
+      document.getElementById("clientModalTitle").textContent = clientId ? "Izmena podataka klijenta" : "Novi klijent";
+
+      if (clientId) {
+        const c = state.clients.find((item) => item.id === clientId);
+        if (c) {
+          document.getElementById("clientNameInput").value = c.name;
+          document.getElementById("clientPibInput").value = c.pib;
+          document.getElementById("clientAddressInput").value = c.address || "";
+          document.getElementById("clientContactInput").value = c.contact;
+          document.getElementById("clientPhoneInput").value = c.phone;
+          document.getElementById("clientEmailInput").value = c.email;
+          document.getElementById("clientNotesInput").value = c.notes || "";
+        }
+      }
+      document.getElementById("clientModal").classList.remove("hidden");
+    };
+
+    window.saveClient = async function (e) {
+      e.preventDefault();
+      const id = document.getElementById("clientIdInput").value || "cli_" + Date.now();
+      const clientObj = {
+        id,
+        name: document.getElementById("clientNameInput").value.trim(),
+        pib: document.getElementById("clientPibInput").value.trim(),
+        address: document.getElementById("clientAddressInput").value.trim(),
+        contact: document.getElementById("clientContactInput").value.trim(),
+        phone: document.getElementById("clientPhoneInput").value.trim(),
+        email: document.getElementById("clientEmailInput").value.trim(),
+        notes: document.getElementById("clientNotesInput").value.trim()
+      };
+
+      const idx = state.clients.findIndex((c) => c.id === id);
+      if (idx >= 0) {
+        state.clients[idx] = clientObj;
+      } else {
+        state.clients.unshift(clientObj);
+      }
+
+      await persistRecord("clients", id, clientObj);
+      closeModal("clientModal");
+      showToast("Podaci o klijentu su sačuvani.", "success");
+    };
+
+    window.deleteClient = async function (clientId) {
+      if (!confirm("Da li ste sigurni da želite da obrišete ovog klijenta?")) return;
+      state.clients = state.clients.filter((c) => c.id !== clientId);
+      if (state.selectedClientId === clientId) state.selectedClientId = null;
+      await removeRecord("clients", clientId);
+      showToast("Klijent je obrisan.", "info");
+    };
+
+    // AKCIJE ZAHTEVA ZA TENDER
+    window.selectRequest = function (requestId) {
+      state.selectedRequestId = requestId;
+      renderAll();
+    };
+
+    window.jumpToHistoryRequest = function (requestId) {
+      if (!requestId) return;
+      const exists = state.requests.find((r) => r.id === requestId);
+      if (exists) {
+        state.selectedRequestId = requestId;
+        renderAll();
+      }
+    };
+
+    window.openRequestModalForClient = function (clientId) {
+      openRequestModal(null, clientId);
+    };
+
+    window.openRequestModal = function (requestId = null, preselectedClientId = null) {
+      if (state.clients.length === 0) {
+        showToast("Prvo dodajte bar jednog klijenta u Koloni 1.", "error");
+        return;
+      }
+
+      const select = document.getElementById("requestClientSelect");
+      select.innerHTML = state.clients
+        .map((c) => `<option value="${c.id}">${escapeHtml(c.name)} (PIB: ${escapeHtml(c.pib)})</option>`)
+        .join("");
+
+      const form = document.getElementById("requestForm");
+      form.reset();
+      document.getElementById("requestIdInput").value = requestId || "";
+      document.getElementById("requestModalTitle").textContent = requestId ? "Izmena zahteva za tender" : "Novi zahtev za tender";
+
+      if (requestId) {
+        const req = state.requests.find((r) => r.id === requestId);
+        if (req) {
+          select.value = req.clientId;
+          document.getElementById("requestTitleInput").value = req.title;
+          document.getElementById("requestDeadlineInput").value = req.deadline;
+          document.getElementById("requestStatusSelect").value = req.status;
+          document.getElementById("requestSpecInput").value = req.spec;
+        }
+      } else {
+        select.value = preselectedClientId || state.selectedClientId || state.clients[0].id;
+        const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+        document.getElementById("requestDeadlineInput").value = nextWeek;
+      }
+
+      document.getElementById("requestModal").classList.remove("hidden");
+    };
+
+    window.saveRequest = async function (e) {
+      e.preventDefault();
+      const existingId = document.getElementById("requestIdInput").value;
+      const isEdit = Boolean(existingId);
+      const id = existingId || "req_" + Date.now();
+
+      const clientId = document.getElementById("requestClientSelect").value;
+      const title = document.getElementById("requestTitleInput").value.trim();
+      const deadline = document.getElementById("requestDeadlineInput").value;
+      const status = document.getElementById("requestStatusSelect").value;
+      const spec = document.getElementById("requestSpecInput").value.trim();
+      const nowIso = new Date().toISOString();
+
+      if (isEdit) {
+        const oldReq = state.requests.find((r) => r.id === id);
+        const changes = [];
+        if (oldReq.title !== title) changes.push(`Naziv: "${oldReq.title}" → "${title}"`);
+        if (oldReq.status !== status) changes.push(`Status: ${oldReq.status} → ${status}`);
+        if (oldReq.deadline !== deadline) changes.push(`Rok: ${oldReq.deadline} → ${deadline}`);
+        if (oldReq.spec !== spec) changes.push("Izmenjena tehnička specifikacija artikala");
+
+        const updatedReq = {
+          ...oldReq,
+          clientId,
+          title,
+          deadline,
+          status,
+          spec,
+          updatedAt: nowIso
+        };
+
+        const idx = state.requests.findIndex((r) => r.id === id);
+        state.requests[idx] = updatedReq;
+        await persistRecord("requests", id, updatedReq);
+
+        await logHistoryEvent({
+          clientId,
+          requestId: id,
+          type: "IZMENA_ZAHTEVA",
+          summary: `Izmenjen zahtev: ${title}`,
+          details: changes.length > 0 ? changes.join(" | ") : "Ažurirani podaci zahteva"
+        });
+      } else {
+        const newReq = {
+          id,
+          clientId,
+          title,
+          deadline,
+          status,
+          spec,
+          createdAt: nowIso,
+          updatedAt: nowIso
+        };
+        state.requests.unshift(newReq);
+        state.selectedRequestId = id;
+        await persistRecord("requests", id, newReq);
+
+        await logHistoryEvent({
+          clientId,
+          requestId: id,
+          type: "KREIRAN_ZAHTEV",
+          summary: `Novi zahtev za tender: ${title}`,
+          details: `Status: ${status} | Rok: ${deadline}`
+        });
+      }
+
+      closeModal("requestModal");
+      showToast("Zahtev sačuvan i zabeležen u istoriji.", "success");
+    };
+
+    window.quickChangeRequestStatus = async function (requestId, newStatus) {
+      const req = state.requests.find((r) => r.id === requestId);
+      if (!req || req.status === newStatus) return;
+      const oldStatus = req.status;
+      req.status = newStatus;
+      req.updatedAt = new Date().toISOString();
+
+      await persistRecord("requests", requestId, req);
+      await logHistoryEvent({
+        clientId: req.clientId,
+        requestId: req.id,
+        type: "PROMENA_STATUSA",
+        summary: `Status promenjen: ${oldStatus} → ${newStatus}`,
+        details: `Tender: ${req.title}`
+      });
+      showToast(`Status promenjen u "${newStatus}".`, "info");
+    };
+
+    window.deleteRequest = async function (requestId) {
+      if (!confirm("Obrisati ovaj zahtev za tender?")) return;
+      state.requests = state.requests.filter((r) => r.id !== requestId);
+      if (state.selectedRequestId === requestId) {
+        state.selectedRequestId = state.requests[0] ? state.requests[0].id : null;
+      }
+      await removeRecord("requests", requestId);
+      showToast("Zahtev je obrisan.", "info");
+    };
+
+    // AKCIJE IZRADE TENDERA / PONUDE (KOLONA 3 & 4)
+    window.addProductToActiveQuote = function (productId) {
+      if (!state.selectedRequestId) {
+        showToast("Prvo izaberite zahtev za tender u Koloni 2.", "error");
+        return;
+      }
+      const prod = state.products.find((p) => p.id === productId);
+      if (!prod) return;
+
+      const quote = state.quotes[state.selectedRequestId];
+      const existingItem = quote.items.find((i) => i.productId === productId);
+      if (existingItem) {
+        existingItem.qty += 1;
+      } else {
+        quote.items.push({
+          productId: prod.id,
+          sku: prod.sku,
+          name: prod.name,
+          qty: 1,
+          unitPriceEur: prod.priceEur
+        });
+      }
+      renderQuoteBuilder();
+      showToast(`Dodato u ponudu: ${prod.name}`, "success");
+    };
+
+    window.updateQuoteItemQty = function (index, qty) {
+      const quote = state.quotes[state.selectedRequestId];
+      if (!quote || !quote.items[index]) return;
+      quote.items[index].qty = Math.max(1, qty);
+      renderQuoteBuilder();
+    };
+
+    window.removeQuoteItem = function (index) {
+      const quote = state.quotes[state.selectedRequestId];
+      if (!quote) return;
+      quote.items.splice(index, 1);
+      renderQuoteBuilder();
+    };
+
+    window.updateQuoteField = function (field, value) {
+      const quote = state.quotes[state.selectedRequestId];
+      if (!quote) return;
+      quote[field] = value;
+      renderQuoteBuilder();
+    };
+
+    window.saveCurrentQuote = async function () {
+      const req = state.requests.find((r) => r.id === state.selectedRequestId);
+      if (!req) return;
+      const quote = state.quotes[req.id];
+      quote.updatedAt = new Date().toISOString();
+
+      const subtotalEur = quote.items.reduce((sum, item) => sum + item.qty * item.unitPriceEur, 0);
+      const netEur = subtotalEur * (1 - (Number(quote.discountPercent) || 0) / 100);
+      const grossEur = netEur * 1.2;
+
+      await persistRecord("quotes", req.id, quote);
+      await logHistoryEvent({
+        clientId: req.clientId,
+        requestId: req.id,
+        type: "AZURIRANA_PONUDA",
+        summary: `Sačuvana ponuda ${quote.quoteNumber} (${quote.items.length} stavki)`,
+        details: `Ukupno sa PDV-om: ${formatMoney(grossEur)} | Rabat: ${quote.discountPercent}%`
+      });
+
+      showToast("Tenderska ponuda sačuvana i zabeležena u istoriji!", "success");
+    };
+
+    // ŠTAMPA / PDF PREGLED PONUDE
+    window.openPrintPreview = function () {
+      const req = state.requests.find((r) => r.id === state.selectedRequestId);
+      if (!req) return;
+      const client = state.clients.find((c) => c.id === req.clientId);
+      const quote = state.quotes[req.id];
+
+      const subtotalEur = quote.items.reduce((sum, item) => sum + item.qty * item.unitPriceEur, 0);
+      const discountAmountEur = subtotalEur * ((Number(quote.discountPercent) || 0) / 100);
+      const netTotalEur = subtotalEur - discountAmountEur;
+      const vatEur = netTotalEur * 0.2;
+      const grandTotalEur = netTotalEur + vatEur;
+
+      const printArea = document.getElementById("printArea");
+      printArea.innerHTML = `
+        <div class="flex justify-between items-start border-b-2 border-slate-900 pb-4">
+          <div>
+            <h1 class="text-xl font-bold text-slate-900">TENDERSKA PONUDA: ${escapeHtml(quote.quoteNumber)}</h1>
+            <p class="text-slate-500 mt-1">Datum izrade: ${new Date().toLocaleDateString("sr-RS")}</p>
+            <p class="text-slate-500">Predmet nabavke: <strong>${escapeHtml(req.title)}</strong></p>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-sm text-slate-900">Vaša Firma za Kancelarijski Nameštaj</div>
+            <div class="text-slate-500">Opremanje poslovnih prostora</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+          <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">Naručilac / Klijent</div>
+          <div class="font-bold text-sm text-slate-900">${escapeHtml(client ? client.name : "")}</div>
+          <div>PIB: ${escapeHtml(client ? client.pib : "")} | Adresa: ${escapeHtml(client ? client.address : "")}</div>
+          <div>Kontakt: ${escapeHtml(client ? client.contact : "")} (${escapeHtml(client ? client.phone : "")}, ${escapeHtml(client ? client.email : "")})</div>
+        </div>
+
+        <table class="w-full border-collapse text-left">
+          <thead>
+            <tr class="bg-slate-900 text-white text-[11px]">
+              <th class="p-2">R.br</th>
+              <th class="p-2">Šifra</th>
+              <th class="p-2">Naziv artikla</th>
+              <th class="p-2 text-center">Kol.</th>
+              <th class="p-2 text-right">Jed. cena</th>
+              <th class="p-2 text-right">Ukupno</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${quote.items
+              .map(
+                (item, i) => `
+              <tr class="border-b border-slate-200">
+                <td class="p-2">${i + 1}.</td>
+                <td class="p-2 font-mono">${escapeHtml(item.sku)}</td>
+                <td class="p-2 font-medium">${escapeHtml(item.name)}</td>
+                <td class="p-2 text-center">${item.qty}</td>
+                <td class="p-2 text-right">${formatMoney(item.unitPriceEur)}</td>
+                <td class="p-2 text-right font-semibold">${formatMoney(item.qty * item.unitPriceEur)}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+
+        <div class="flex justify-between items-start pt-2">
+          <div class="max-w-md text-slate-600">
+            <div class="font-bold text-slate-800 mb-1">Uslovi isporuke i plaćanja:</div>
+            <p>${escapeHtml(quote.deliveryTerms)}</p>
+          </div>
+          <div class="w-64 space-y-1 text-right">
+            <div class="flex justify-between"><span>Osnovica:</span><span>${formatMoney(subtotalEur)}</span></div>
+            ${
+              discountAmountEur > 0
+                ? `<div class="flex justify-between text-amber-700"><span>Rabat (${quote.discountPercent}%):</span><span>-${formatMoney(discountAmountEur)}</span></div>`
+                : ""
+            }
+            <div class="flex justify-between"><span>Neto iznos:</span><span>${formatMoney(netTotalEur)}</span></div>
+            <div class="flex justify-between"><span>PDV (20%):</span><span>${formatMoney(vatEur)}</span></div>
+            <div class="flex justify-between font-bold text-sm border-t border-slate-900 pt-1">
+              <span>UKUPNO SA PDV:</span><span>${formatMoney(grandTotalEur)}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("printModal").classList.remove("hidden");
+    };
+
+    // AKCIJE ARTIKALA U BAZI (KOLONA 4)
+    window.openProductModal = function (productId = null) {
+      const form = document.getElementById("productForm");
+      form.reset();
+      document.getElementById("productIdInput").value = productId || "";
+      document.getElementById("productModalTitle").textContent = productId ? "Izmena artikla" : "Novi artikal u katalogu";
+
+      if (productId) {
+        const p = state.products.find((item) => item.id === productId);
+        if (p) {
+          document.getElementById("productSkuInput").value = p.sku;
+          document.getElementById("productCatInput").value = p.category;
+          document.getElementById("productNameInput").value = p.name;
+          document.getElementById("productSpecsInput").value = p.specs || "";
+          document.getElementById("productPriceInput").value = p.priceEur;
+          document.getElementById("productStockInput").value = p.stock || "";
+        }
+      }
+      document.getElementById("productModal").classList.remove("hidden");
+    };
+
+    window.saveProduct = async function (e) {
+      e.preventDefault();
+      const id = document.getElementById("productIdInput").value || "prd_" + Date.now();
+      const prodObj = {
+        id,
+        sku: document.getElementById("productSkuInput").value.trim(),
+        category: document.getElementById("productCatInput").value,
+        name: document.getElementById("productNameInput").value.trim(),
+        specs: document.getElementById("productSpecsInput").value.trim(),
+        priceEur: parseFloat(document.getElementById("productPriceInput").value) || 0,
+        stock: document.getElementById("productStockInput").value.trim()
+      };
+
+      const idx = state.products.findIndex((p) => p.id === id);
+      if (idx >= 0) {
+        state.products[idx] = prodObj;
+      } else {
+        state.products.unshift(prodObj);
+      }
+
+      await persistRecord("products", id, prodObj);
+      closeModal("productModal");
+      showToast("Artikal sačuvan u katalogu.", "success");
+    };
+
+    // FIREBASE MODAL & KONTROLE
+    window.openFirebaseModal = function () {
+      const saved = localStorage.getItem("tenderpro_firebase_config");
+      if (saved) {
+        document.getElementById("firebaseConfigTextarea").value = saved;
+      }
+      document.getElementById("firebaseModal").classList.remove("hidden");
+    };
+
+    window.saveFirebaseConfig = function () {
+      const raw = document.getElementById("firebaseConfigTextarea").value.trim();
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed.apiKey || !parsed.projectId) {
+          throw new Error("Nedostaje apiKey ili projectId");
+        }
+        localStorage.setItem("tenderpro_firebase_config", JSON.stringify(parsed, null, 2));
+        closeModal("firebaseModal");
+        connectFirebase(parsed, true);
+      } catch (err) {
+        showToast("Neispravan JSON format. Proverite zagrade i navodnike.", "error");
+      }
+    };
+
+    window.disconnectFirebase = function () {
+      localStorage.removeItem("tenderpro_firebase_config");
+      state.useFirebase = false;
+      state.unsubscribers.forEach((u) => u());
+      state.unsubscribers = [];
+      closeModal("firebaseModal");
+      loadFromLocalStorage();
+      showToast("Prebačeno na lokalnu bazu u pregledaču.", "info");
+    };
+
+    function updateDbStatusUI(isFirebase) {
+      const dot = document.getElementById("dbStatusDot");
+      const text = document.getElementById("dbStatusText");
+      if (isFirebase) {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+        text.textContent = "Firebase Firestore (Live)";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-amber-400";
+        text.textContent = "Lokalna baza (Demo)";
+      }
+    }
+
+    // VALUTA & OSTALO
+    window.setCurrency = function (curr) {
+      state.currency = curr;
+      const eurBtn = document.getElementById("currEurBtn");
+      const rsdBtn = document.getElementById("currRsdBtn");
+
+      if (curr === "EUR") {
+        eurBtn.className = "px-2.5 py-1 rounded-md font-medium bg-amber-500 text-slate-950 transition";
+        rsdBtn.className = "px-2.5 py-1 rounded-md font-medium text-slate-300 hover:text-white transition";
+      } else {
+        rsdBtn.className = "px-2.5 py-1 rounded-md font-medium bg-amber-500 text-slate-950 transition";
+        eurBtn.className = "px-2.5 py-1 rounded-md font-medium text-slate-300 hover:text-white transition";
+      }
+      renderAll();
+    };
+
+    window.resetDemoData = function () {
+      if (!confirm("Vratiti početne demo podatke? Sve lokalne izmene biće resetovane.")) return;
+      localStorage.removeItem("tenderpro_data_v1");
+      state.selectedClientId = null;
+      state.selectedRequestId = "req_101";
+      loadFromLocalStorage();
+      showToast("Demo podaci su resetovani.", "info");
+    };
+
+    window.closeModal = function (id) {
+      document.getElementById(id).classList.add("hidden");
+    };
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      const el = document.createElement("div");
+      const colors =
+        type === "success"
+          ? "bg-emerald-600 text-white"
+          : type === "error"
+          ? "bg-rose-600 text-white"
+          : "bg-slate-800 text-white";
+      el.className = `${colors} px-4 py-2.5 rounded-lg shadow-lg text-xs font-medium transition-all duration-300`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = "0";
+        setTimeout(() => el.remove(), 300);
+      }, 3200);
+    }
+
+    // Pokretanje aplikacije
+    init();
+  </script>
+</body>
+</html>
+"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("index.html je uspešno generisan.")
